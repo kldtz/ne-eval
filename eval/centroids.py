@@ -107,9 +107,6 @@ class CentroidEvaluation:
         self._add_annotations(gold_annotations)
         self._compute_centroids()
 
-    def __repr__(self):
-        return '\n\n'.join('Type: ' + str(x[0]) + '\n' + str(x[1]) for x in self.type_counts.items())
-
     def _add_annotations(self, annotations):
         for annotation in sorted(annotations, key=lambda x: x.start):
             self.type_counts[annotation.type].add_annotation(annotation)
@@ -124,7 +121,8 @@ class CentroidEvaluation:
         tp_centroids = set()
         for annotation in predictions:
             if annotation.type in self.type_counts:
-                centroid = self.type_counts[annotation.type].match_centroid(annotation, threshold=threshold, lb=lb, rb=rb)
+                centroid = self.type_counts[annotation.type].match_centroid(
+                    annotation, threshold=threshold, lb=lb, rb=rb)
                 if centroid:
                     tp_centroids.add(centroid)
                     tp.append(annotation)
@@ -136,10 +134,10 @@ class CentroidEvaluation:
 
     def _collect_false_negatives(self, tp_centroids, threshold, lb, rb):
         fn = []
-        for type, counts in self.type_counts.items():
+        for ann_type, counts in self.type_counts.items():
             for c in counts.centroids(threshold=threshold):
                 if c not in tp_centroids:
                     left = [l[0] for l in c.left if l[1] >= lb]
                     right = [r[0] for r in c.right if r[1] >= rb]
-                    fn.append(self.Centroid(type, tuple(left), tuple(right)))
+                    fn.append(self.Centroid(ann_type, tuple(left), tuple(right)))
         return fn
